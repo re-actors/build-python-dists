@@ -1,0 +1,212 @@
+---
+name: build-python-dists
+description: >-
+  GitHub Action for building Python package distributions via PEP 517
+author: >-
+  Sviatoslav Sydorenko
+  <wk+~github.com/re-actors/build-python-dists@sydorenko.org.ua>
+
+branding:
+  icon: package
+  color: green
+
+inputs:
+  build-extra-args:
+    default:
+    description: >-
+      Extra args to pass to the PyPA/build tool invocation
+      (can be used to pass `--config-setting` args)
+    required: false
+  pip-constraints-file:
+    default:
+    description: >-
+      `constraints.txt`-compliant file path for the managed isolated
+      build environment to respect
+    required: false
+  dist-type:
+    default:
+    description: >-
+      One of `sdist` or `wheel` (defaults to building both)
+    required: false
+  dists-dir:
+    default: dist/
+    description: >-
+      A directory to put the dists into (default: `dist/`)
+    required: false
+  workflow-artifact-name:
+    default:
+    description: >-
+      If set, is used the produced dists are made accessible to the
+      later jobs under this name (defaults to unset)
+    required: false
+  expected-artifact-names:
+    default:
+    description: >-
+      Space-delimited list of globs for the filenames. If set, it is
+      used as a sanity check to fail-fast if the produced artifacts do
+      not match the expectation (defaults to unset)
+    required: false
+  isolated-build-env:
+    default: true
+    description: >-
+      Whether or not to create an isolated build environment
+    required: false
+  check-build-deps:
+    default: true
+    description: >-
+      Whether or not validate the PEP 517 build backend required
+      dependencies against what's installed in the build environment
+    required: false
+
+  build-version-spec:
+    default: build
+    description: >-
+      PyPA/build tool version to use for building the dists
+      (defaults to `build`, can be pinned to a precise version)
+    required: false
+
+  python-version:
+    default: >-
+      3.10
+    description: >-
+      Python version to use as the current tox runtime
+      (defaults to `3.10`)
+    required: false
+
+  validate-dists-meta:
+    default: true
+    description: >-
+      Whether or not to perform the produced distribution packages
+      validation
+    required: false
+
+outputs: {}
+#  dists:
+#    description: List of the installed packages
+#    value: ${{ steps.bindep.outputs.packages }}
+
+runs:
+  using: composite
+  steps:
+  - name: Validate that a valid dist type was requested
+    if: >-
+      inputs.dist-type
+      && inputs.dist-type != 'sdist'
+      && inputs.dist-type != 'wheel'
+    run: exit 1
+    shell: bash
+  - name: Set the active Python interpeter to ${{ inputs.python-version }}
+    uses: actions/setup-python@v2
+    with:
+      python-version: ${{ inputs.python-version }}
+  - name: Install ${{ inputs.build-version-spec }}
+    run: >
+      echo '::group::Installing ${{ inputs.build-version-spec }}'
+
+
+      python -m pipx install '${{ inputs.build-version-spec }}'
+
+
+      echo '::endgroup::'
+    shell: bash
+  - name: Prepare a temporary for putting the dists there
+    id: dists-tmp
+    run: >
+      echo '::group::Preparing a temporary dists directory...'
+
+
+      TMPDIR=$(
+        mktemp -d --suffix=-dists "${GITHUB_ACTION_PATH}/tmp-XXXXX"
+      )
+      && echo "::set-output name=dir::${TMPDIR}"
+
+
+      echo '::endgroup::'
+    shell: bash
+  - name: Build dists v${{ inputs.build-version-spec }}
+    run: >
+      echo '::group::Building dists v${{ inputs.build-version-spec }}'
+
+
+      python -m pipx run
+      --spec '${{ inputs.build-version-spec }}'
+      pyproject-build ${{
+        fromJSON(inputs.dist-type)
+        && format('--{0}', inputs.dist-type)
+        || ''
+      }}
+      --outdir '${{ steps.dists-tmp.outputs.dir }}'
+      ${{
+        check-build-deps && '' || '--skip-dependency-check'
+      }} ${{
+        isolated-build-env && '' || '--no-isolation'
+      }} ${{
+        inputs.build-extra-args
+      }}
+
+
+      echo '::endgroup::'
+    shell: bash
+  - name: Validate the artifact names
+    if: inputs.expected-artifact-names
+    run: >
+      echo '::group::Validating the artifact names...'
+
+
+      ls -1
+      ${{ inputs.expected-artifact-names }}
+
+
+      mkdir -pv '${{ steps.dists-tmp.outputs.dir }}--tmp'
+      && mv ${{ inputs.expected-artifact-names }}
+      '${{ steps.dists-tmp.outputs.dir }}--tmp/'
+
+
+      test -z "$(ls -A)"
+
+
+      mv -v ${{ steps.dists-tmp.outputs.dir }}--tmp/* .
+      && rmdir -v '${{ steps.dists-tmp.outputs.dir }}--tmp'
+
+
+      echo '::endgroup::'
+    shell: bash
+    working-directory: ${{ steps.dists-tmp.outputs.dir }}
+  - name: Validate artifacts metadata
+    if: inputs.expected-artifact-names
+    run: >
+      echo '::group::Validating the artifacts metadata per spec...'
+
+
+      twine check --strict
+      ${{
+        inputs.expected-artifact-names
+        && inputs.expected-artifact-names
+        || '*'
+      }}
+
+
+      echo '::endgroup::'
+    shell: bash
+    working-directory: ${{ steps.dists-tmp.outputs.dir }}
+  - name: Save the dists as a GHA artifact
+    if: inputs.workflow-artifact-name
+    uses: actions/upload-artifact@v2
+    with:
+      name: ${{ inputs.workflow-artifact-name }}
+      path: ${{ steps.dists-tmp.outputs.dir }}
+  - name: Move dists to the requested target directory
+    run: >
+      echo '::group::Putting the dists into the requested location...'
+
+
+      mkdir -pv ${{ inputs.dists-dir }}
+      && mv -v
+      ${{ steps.dists-tmp.outputs.dir }}/*
+      ${{ inputs.dists-dir }}
+
+
+
+      echo '::endgroup::'
+    shell: bash
+...
