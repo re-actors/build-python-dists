@@ -139,7 +139,7 @@ runs:
       ${{
         inputs.check-build-deps && '' || '--skip-dependency-check'
       }} ${{
-        isolated-build-env && '' || '--no-isolation'
+        inputs.isolated-build-env && '' || '--no-isolation'
       }} ${{
         inputs.build-extra-args
       }}
