@@ -115,9 +115,9 @@ runs:
     if: inputs.build-source == 'sdist'
     run: >-
       tar xzvf
-      "${{ github.action_path }}/.tmp/${{
+      ${{ github.action_path }}/.tmp/${{
         steps.dists-tmp.outputs.dir
-      }}/${{ inputs.dists-dir }}/*.tar.gz"
+      }}/${{ inputs.dists-dir }}/*.tar.gz
       --directory='${{ github.workspace }}'
       --strip-components=1
     working-directory: ${{ github.action_path }}/.tmp
