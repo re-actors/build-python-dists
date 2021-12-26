@@ -106,7 +106,7 @@ runs:
     if: inputs.build-source == 'git'
     uses: actions/checkout@v2
   - name: Retrieve the dists from a GHA artifact
-    if: inputs.workflow-artifact-name
+    if: inputs.workflow-artifact-name && inputs.build-source == 'sdist'
     uses: actions/download-artifact@v2
     with:
       name: ${{ inputs.workflow-artifact-name }}
