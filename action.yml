@@ -113,7 +113,25 @@ runs:
       path: ${{ github.action_path }}/.tmp/${{ steps.dists-tmp.outputs.dir }}
   - name: Get the source out of the tarball
     if: inputs.build-source == 'sdist'
-    run: >-
+    run: >
+      ls -alhRt ${{ github.action_path }}/.tmp/${{
+        steps.dists-tmp.outputs.dir
+      }}
+
+
+      ls -alhRt ${{ github.action_path }}/.tmp/${{
+        steps.dists-tmp.outputs.dir
+      }}/${{ inputs.dists-dir }}/
+
+
+      ls -alhRt ${{ github.action_path }}/.tmp/${{
+        steps.dists-tmp.outputs.dir
+      }}/${{ inputs.dists-dir }}/*.tar.gz
+
+
+      ls -alhRt '${{ github.workspace }}'
+
+
       tar xzvf
       ${{ github.action_path }}/.tmp/${{
         steps.dists-tmp.outputs.dir
