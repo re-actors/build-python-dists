@@ -131,11 +131,7 @@ runs:
       echo '::group::Building dists v${{ inputs.build-version-spec }}'
 
 
-      python -m build ${{
-        fromJSON(inputs.dist-type)
-        && format('--{0}', inputs.dist-type)
-        || ''
-      }} --outdir '${{
+      python -m build --outdir '${{
         steps.dists-tmp.outputs.dir
       }}' ${{
         inputs.check-build-deps && '' || '--skip-dependency-check'
