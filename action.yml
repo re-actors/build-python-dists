@@ -148,6 +148,8 @@ runs:
       echo '::endgroup::'
     shell: bash
   - name: Build dists v${{ inputs.build-version-spec }}
+    env:
+      PIP_CONSTRAINT: ${{ inputs.pip-constraints-file }}
     run: >
       set -x
 
@@ -155,7 +157,7 @@ runs:
       echo '::group::Building dists v${{ inputs.build-version-spec }}'
 
 
-      PIP_CONSTRAINT=${{ inputs.pip-constraints-file }} python -m build ${{
+      python -m build ${{
         inputs.dist-type
         && format('--{0}', inputs.dist-type)
         || ''
