@@ -80,6 +80,13 @@ inputs:
       validation
     required: false
 
+  build-source:
+    default: git
+    description: >-
+      Where to check out the source from
+      (defaults to `git`, can also be `sdist` or `skip`)
+    required: false
+
 outputs: {}
 #  dists:
 #    description: List of the installed packages
@@ -94,6 +101,24 @@ runs:
       && inputs.dist-type != 'sdist'
       && inputs.dist-type != 'wheel'
     run: exit 1
+    shell: bash
+  - name: Check out the source from the repository
+    if: inputs.build-source == 'git'
+    uses: actions/checkout@v2
+  - name: Retrieve the dists from a GHA artifact
+    if: inputs.workflow-artifact-name
+    uses: actions/download-artifact@v2
+    with:
+      name: ${{ inputs.workflow-artifact-name }}
+      path: ${{ steps.dists-tmp.outputs.dir }}
+    working-directory: ${{ github.action_path }}/.tmp
+  - name: Get the source out of the tarball
+    if: inputs.build-source == 'sdist'
+    run: >-
+      tar xzvf "${{ inputs.dists-dir }}/*.tar.gz"
+      --directory='${{ github.workspace }}'
+      --strip-components=1
+    working-directory: ${{ github.action_path }}/.tmp
     shell: bash
   - name: Set the active Python interpeter to ${{ inputs.python-version }}
     uses: actions/setup-python@v2
