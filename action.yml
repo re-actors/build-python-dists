@@ -132,7 +132,7 @@ runs:
 
 
       python -m build ${{
-        fromJSON(inputs.dist-type)
+        inputs.dist-type
         && format('--{0}', inputs.dist-type)
         || ''
       }} --outdir '${{
