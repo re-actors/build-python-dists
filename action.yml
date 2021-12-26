@@ -102,47 +102,16 @@ runs:
       && inputs.dist-type != 'wheel'
     run: exit 1
     shell: bash
-  - name: Check out the source from the repository
+  - name: Retrieve the project source from the repository
     if: inputs.build-source == 'git'
     uses: actions/checkout@v2
-  - name: Retrieve the dists from a GHA artifact
+  - name: Retrieve the project source from an sdist inside the GHA artifact
     if: inputs.workflow-artifact-name && inputs.build-source == 'sdist'
-    uses: actions/download-artifact@v2
+    uses: re-actors/checkout-python-sdist@main
     with:
-      name: ${{ inputs.workflow-artifact-name }}
-      path: >-
-        ${{ github.action_path }}/.tmp/${{
-          steps.dists-tmp.outputs.dir
-        }}/${{ inputs.dists-dir }}/
-  - name: Get the source out of the tarball
-    if: inputs.build-source == 'sdist'
-    run: >
-      ls -alhRt ${{ github.action_path }}/.tmp/${{
-        steps.dists-tmp.outputs.dir
-      }}
-
-
-      ls -alhRt ${{ github.action_path }}/.tmp/${{
-        steps.dists-tmp.outputs.dir
-      }}/${{ inputs.dists-dir }}/
-
-
-      ls -alhRt ${{ github.action_path }}/.tmp/${{
-        steps.dists-tmp.outputs.dir
-      }}/${{ inputs.dists-dir }}/*.tar.gz
-
-
-      ls -alhRt '${{ github.workspace }}'
-
-
-      tar xzvf
-      ${{ github.action_path }}/.tmp/${{
-        steps.dists-tmp.outputs.dir
-      }}/${{ inputs.dists-dir }}/*.tar.gz
-      --directory='${{ github.workspace }}'
-      --strip-components=1
-    working-directory: ${{ github.action_path }}/.tmp
-    shell: bash
+      workflow-artifact-name: ${{ inputs.workflow-artifact-name }}
+      source-tarball-name: >-
+        *.tar.gz
   - name: Set the active Python interpeter to ${{ inputs.python-version }}
     uses: actions/setup-python@v2
     with:
