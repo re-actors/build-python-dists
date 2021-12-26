@@ -138,9 +138,13 @@ runs:
       }} --outdir '${{
         steps.dists-tmp.outputs.dir
       }}' ${{
-        inputs.check-build-deps && '' || '--skip-dependency-check'
+        fromJSON(inputs.check-build-deps)
+        && ''
+        || '--skip-dependency-check'
       }} ${{
-        inputs.isolated-build-env && '' || '--no-isolation'
+        fromJSON(inputs.isolated-build-env)
+        && ''
+        || '--no-isolation'
       }} ${{
         inputs.build-extra-args
       }}
