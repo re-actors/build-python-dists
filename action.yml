@@ -125,6 +125,9 @@ runs:
     shell: bash
   - name: Build dists v${{ inputs.build-version-spec }}
     run: >
+      set -x
+
+
       echo '::group::Building dists v${{ inputs.build-version-spec }}'
 
 
