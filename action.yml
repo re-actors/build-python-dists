@@ -135,9 +135,9 @@ runs:
         fromJSON(inputs.dist-type)
         && format('--{0}', inputs.dist-type)
         || ''
-      }}
-      --outdir '${{ steps.dists-tmp.outputs.dir }}'
-      ${{
+      }} --outdir '${{
+        steps.dists-tmp.outputs.dir
+      }}' ${{
         inputs.check-build-deps && '' || '--skip-dependency-check'
       }} ${{
         inputs.isolated-build-env && '' || '--no-isolation'
