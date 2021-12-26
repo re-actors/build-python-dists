@@ -155,7 +155,7 @@ runs:
       echo '::group::Building dists v${{ inputs.build-version-spec }}'
 
 
-      PIP_CONSTRAINT=${{ input.pip-constraints-file }} python -m build ${{
+      PIP_CONSTRAINT=${{ inputs.pip-constraints-file }} python -m build ${{
         inputs.dist-type
         && format('--{0}', inputs.dist-type)
         || ''
