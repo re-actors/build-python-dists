@@ -128,9 +128,9 @@ runs:
       echo '::group::Building dists w/ build v${{ inputs.build-version-spec }}'
 
 
-      python -m build ${{ format('--{0}', inputs.dist-type) }}
-      --outdir '${{ steps.dists-tmp.outputs.dir }}'
-      ${{
+      python -m build ${{ format('--{0}', inputs.dist-type) }} --outdir '${{
+        steps.dists-tmp.outputs.dir
+      }}' ${{
         inputs.check-build-deps && '' || '--skip-dependency-check'
       }} ${{
         inputs.isolated-build-env && '' || '--no-isolation'
