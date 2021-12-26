@@ -110,8 +110,7 @@ runs:
     uses: actions/download-artifact@v2
     with:
       name: ${{ inputs.workflow-artifact-name }}
-      path: ${{ steps.dists-tmp.outputs.dir }}
-    working-directory: ${{ github.action_path }}/.tmp
+      path: ${{ github.action_path }}/.tmp/${{ steps.dists-tmp.outputs.dir }}
   - name: Get the source out of the tarball
     if: inputs.build-source == 'sdist'
     run: >-
