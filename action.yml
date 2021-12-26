@@ -125,7 +125,7 @@ runs:
     shell: bash
   - name: Build dists v${{ inputs.build-version-spec }}
     run: >
-      echo '::group::Building dists w/ build v${{ inputs.build-version-spec }}'
+      echo '::group::Building dists v${{ inputs.build-version-spec }}'
 
 
       python -m build ${{ format('--{0}', inputs.dist-type) }} --outdir '${{
