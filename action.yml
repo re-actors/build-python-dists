@@ -104,7 +104,7 @@ runs:
       echo '::group::Installing ${{ inputs.build-version-spec }}'
 
 
-      python -m pipx install '${{ inputs.build-version-spec }}'
+      python -m pip install '${{ inputs.build-version-spec }}'
 
 
       echo '::endgroup::'
@@ -128,13 +128,7 @@ runs:
       echo '::group::Building dists w/ build v${{ inputs.build-version-spec }}'
 
 
-      python -m pipx run
-      --spec '${{ inputs.build-version-spec }}'
-      pyproject-build ${{
-        fromJSON(inputs.dist-type)
-        && format('--{0}', inputs.dist-type)
-        || ''
-      }}
+      python -m build ${{ format('--{0}', inputs.dist-type) }}
       --outdir '${{ steps.dists-tmp.outputs.dir }}'
       ${{
         inputs.check-build-deps && '' || '--skip-dependency-check'
