@@ -87,10 +87,16 @@ inputs:
       (defaults to `git`, can also be `sdist` or `skip`)
     required: false
 
-outputs: {}
-#  dists:
-#    description: List of the installed packages
-#    value: ${{ steps.bindep.outputs.packages }}
+outputs:
+  dists:
+    description: List of the built distribution packages
+    value: ${{ steps.dists.outputs.all }}
+  sdist:
+    description: Name of the source distribution package
+    value: ${{ steps.dists.outputs.sdist }}
+  wheels:
+    description: List of the binary distribution packages
+    value: ${{ steps.dists.outputs.wheels }}
 
 runs:
   using: composite
@@ -233,4 +239,26 @@ runs:
 
       echo '::endgroup::'
     shell: bash
+  - name: Move dists to the requested target directory
+    id: dists
+    run: >
+      echo '::group::Saving the dist names as outputs...'
+
+
+      echo "::set-output name=all::$(
+      ls -1 *.tar.gz *.whl
+      | tr '\n' ' '
+      | sed 's#\s\+$##;s#^\s\+##g'
+      )"
+
+
+      echo "::set-output name=sdist::$(ls -1 *.tar.gz)"
+
+
+      echo "::set-output name=wheels::$(ls -1 *.whl | cat)"
+
+
+      echo '::endgroup::'
+    shell: bash
+    working-directory: ${{ inputs.dists-dir }}
 ...
