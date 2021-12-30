@@ -97,6 +97,9 @@ outputs:
   wheels:
     description: List of the binary distribution packages
     value: ${{ steps.dists.outputs.wheels }}
+  workflow-artifact-name:
+    description: Workflow artifact that contains all of the produced dists
+    value: ${{ inputs.workflow-artifact-name }}
 
 runs:
   using: composite
